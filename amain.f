@@ -266,7 +266,9 @@ C
 2011	CALL RSPEAK(SPK)
 C
 2012	VERB=0
-	OBJ=0
+C Clearing OBJ keeps the hints from working.
+C - Eric Dittman
+C	OBJ=0
 C
 C  Check if this LOC is eligible for any hints.  If been here long enough,
 C  branch to help section (on later page).  Hints all come back here eventually
@@ -276,7 +278,53 @@ C
 	IF(HINTED(HINT))GOTO 2602
 	IF(.NOT.BITSET(LOC,HINT))HINTLC(HINT)=-1
 	HINTLC(HINT)=HINTLC(HINT)+1
-	IF(HINTLC(HINT).GE.HINTS(HINT,1))GOTO 40000
+	IF(HINTLC(HINT).LT.HINTS(HINT,1))GOTO 2602
+C
+C The section below was moved from outside the loop to avoid warnings.
+C - Eric Dittman
+C
+C  HINTS
+C
+C  Come here if he's been long enough at required LOC(S) for some unused hint.
+C  Hint number is in variable "HINT".  Branch to quick test for additional
+C  conditions, then come back to do neat stuff.  GOTO 40010 if conditions are
+C  met and we want to offer the hint.  GOTO 40020 to clear HINTLC back to zero,
+C  40030 to take no action yet.
+C
+40000	GOTO (40400,40500,40600,40700,40800,40900)(HINT-3)
+C	      CAVE  BIRD  SNAKE MAZE  DARK  WITT
+	CALL BUG(27)
+C
+40010	HINTLC(HINT)=0
+	IF(.NOT.YES(HINTS(HINT,3),0,54))GOTO 2602
+	PRINT 40012,HINTS(HINT,2)
+40012	FORMAT(' I am prepared to give you a hint, but it will cost you',
+     1  I2,' points.')
+	HINTED(HINT)=YES(175,HINTS(HINT,4),54)
+	IF(HINTED(HINT).AND.LIMIT.GT.30)LIMIT=LIMIT+30*HINTS(HINT,2)
+40020	HINTLC(HINT)=0
+40030	GOTO 2602
+C
+C  Now for the quick tests.  See database description for one-line notes.
+C
+40400	IF(PROP(GRATE).EQ.0.AND..NOT.HERE(KEYS))GOTO 40010
+	GOTO 40020
+C
+40500	IF(HERE(BIRD).AND.TOTING(ROD).AND.OBJ.EQ.BIRD)GOTO 40010
+	GOTO 40030
+C
+40600	IF(HERE(SNAKE).AND..NOT.HERE(BIRD))GOTO 40010
+	GOTO 40020
+C
+40700	IF(ATLOC(LOC).EQ.0.AND.ATLOC(OLDLOC).EQ.0
+     1  .AND.ATLOC(OLDLC2).EQ.0.AND.HOLDNG.GT.1)GOTO 40010
+	GOTO 40020
+C
+40800	IF(PROP(EMRALD).NE.-1.AND.PROP(PYRAM).EQ.-1)GOTO 40010
+	GOTO 40020
+C
+40900	GOTO 40010
+C
 2602	CONTINUE
 C
 C  Kick the random number generator just to add variety to the chase.  Also,
@@ -1246,50 +1294,6 @@ C  RESUME.  Restore the world.
 C
 8320	CALL RSTRGM(I)
 	GO TO 2012
-
-C  HINTS
-C
-C  Come here if he's been long enough at required LOC(S) for some unused hint.
-C  Hint number is in variable "HINT".  Branch to quick test for additional
-C  conditions, then come back to do neat stuff.  GOTO 40010 if conditions are
-C  met and we want to offer the hint.  GOTO 40020 to clear HINTLC back to zero,
-C  40030 to take no action yet.
-C
-40000	GOTO (40400,40500,40600,40700,40800,40900)(HINT-3)
-C	      CAVE  BIRD  SNAKE MAZE  DARK  WITT
-	CALL BUG(27)
-C
-40010	HINTLC(HINT)=0
-C HOFFMAN        IF(.NOT.YES(HINTS(HINT,3),0,54))GOTO 2602
-        IF(.NOT.YES(HINTS(HINT,3),0,54)) CONTINUE
-	PRINT 40012,HINTS(HINT,2)
-40012	FORMAT(' I am prepared to give you a hint, but it will cost you',
-     1  I2,' points.')
-	HINTED(HINT)=YES(175,HINTS(HINT,4),54)
-	IF(HINTED(HINT).AND.LIMIT.GT.30)LIMIT=LIMIT+30*HINTS(HINT,2)
-40020	HINTLC(HINT)=0
-C HOFFMAN 40030	GOTO 2602
-40030   CONTINUE
-C
-C  Now for the quick tests.  See database description for one-line notes.
-C
-40400	IF(PROP(GRATE).EQ.0.AND..NOT.HERE(KEYS))GOTO 40010
-	GOTO 40020
-C
-40500	IF(HERE(BIRD).AND.TOTING(ROD).AND.OBJ.EQ.BIRD)GOTO 40010
-	GOTO 40030
-C
-40600	IF(HERE(SNAKE).AND..NOT.HERE(BIRD))GOTO 40010
-	GOTO 40020
-C
-40700	IF(ATLOC(LOC).EQ.0.AND.ATLOC(OLDLOC).EQ.0
-     1  .AND.ATLOC(OLDLC2).EQ.0.AND.HOLDNG.GT.1)GOTO 40010
-	GOTO 40020
-C
-40800	IF(PROP(EMRALD).NE.-1.AND.PROP(PYRAM).EQ.-1)GOTO 40010
-	GOTO 40020
-C
-40900	GOTO 40010
 
 C  Cave closing and scoring
 C
