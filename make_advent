@@ -1,0 +1,6 @@
+# create Colossal Cave Adventure from its Fortran source code
+# after installing gfortran, you can need to invoke this:
+#    export PATH=$PATH:/usr/local/bin
+# to allow the following to find the compiler..
+#
+gfortran -o advent advent.f amain.f ainit.f asubr.f
