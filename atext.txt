@@ -943,6 +943,7 @@
 54,BROKEN
 55,Y2
 56,CLIMB
+57,L
 57,LOOK
 57,EXAMINE
 57,TOUCH
@@ -975,6 +976,7 @@
 1003,GRATE
 1004,CAGE
 1005,ROD
+1005,WAND
 1006,ROD     (MUST BE NEXT OBJECT AFTER "REAL" ROD)
 1007,STEPS
 1008,BIRD
@@ -1149,6 +1151,9 @@
 3050,POCUS
 3051,HELP
 3051,?
+3052,VERBOSE
+3052,VERBOSITY
+3054,AGAIN
 3064,TREE
 3064,TREES
 3066,DIG
@@ -1645,6 +1650,8 @@
 199,you, curses, and grabs for his axe.
 200,Is this acceptable?
 201,Colossal Cave is ALWAYS open, provided this is your computer.
+202,Now operating at maximum verbosity. Long descriptions on.
+203,We are already operating at maximum verbosity.
 -1
 7
 1,3

@@ -3,10 +3,10 @@ C
 	SUBROUTINE MAIN
 	IMPLICIT INTEGER (A-Z)
 	INCLUDE 'aparam.for'
-	LOGICAL YES,TOTING,HERE,AT,BITSET,DARK,WZDARK,YEA
+	LOGICAL YES,TOTING,HERE,AT,BITSET,DARK,WZDARK,YEA,VERBOSITY
         LOGICAL FORCED
         LOGICAL, DIMENSION(100) :: PCT
-	CHARACTER*8 WORD1,WORD2
+	CHARACTER*8 WORD1,WORD2,OLDWORD1,OLDWORD2
 C
 C  Statement functions
 C
@@ -41,6 +41,8 @@ C
 	DARK(DUMMY)=MOD(COND(LOC),2).EQ.0.AND.(PROP(LAMP).EQ.0.OR.
      1  .NOT.HERE(LAMP))
 	PCT(N)=RND(100).LT.N
+	VERBOSITY=.FALSE.
+	OLDWORD1=''
 
 C  Start-up, dwarf stuff
 C
@@ -225,7 +227,7 @@ C
 	KK=STEXT(LOC)
 	KENT=0
 	IF (ABBNUM.NE.0) KENT=MOD(ABB(LOC),ABBNUM)
-	IF (KENT.EQ.0.OR.KK.EQ.0) KK=LTEXT(LOC)
+	IF (KENT.EQ.0.OR.KK.EQ.0.OR.VERBOSITY.EQV..TRUE.) KK=LTEXT(LOC)
 	IF(FORCED(LOC).OR..NOT.DARK(0))GOTO 2001
 	IF(WZDARK.AND.PCT(35))GOTO 90
 	KK=RTEXT(16)
@@ -243,6 +245,7 @@ C  are because PROP=0 is needed to get full score.
 C
 	IF(DARK(0))GOTO 2012
 	ABB(LOC)=ABB(LOC)+1
+C  ATLOC is the subroutine that shows the objs at loc
 	I=ATLOC(LOC)
 2004	IF(I.EQ.0)GOTO 2012
 	OBJ=I
@@ -342,6 +345,9 @@ C
 	IF(KNFLOC.GT.0.AND.KNFLOC.NE.LOC)KNFLOC=0
 	I=RND(1)
 	CALL GETIN(WORD1,WORD2)
+	IF(WORD1.EQ.'AGAIN')GOTO 2645
+	OLDWORD1=WORD1
+	OLDWORD2=WORD2
 C
 C  Every input, check "FOOBAR" flag.  If zero, nothing's going on.  If pos,
 C  make neg.  If neg, he skipped a word, so make it zero.
@@ -385,8 +391,24 @@ C
 	IF(I.EQ.-1) GOTO 3000
 	K=MOD(I,1000)
 	KQ=I/1000+1
-	GOTO (8,5000,4000,2010) KQ
+	IF(WORD1.EQ.'VERBOSE'.OR.WORD1.EQ.'VERBOSIT')GOTO 3100
+2640	GOTO (8,5000,4000,2010) KQ
 	CALL BUG(22)
+C
+C	do it again
+C
+2645	IF (OLDWORD1.EQ.'')GOTO 2647
+	WORD1=OLDWORD1
+	WORD2=OLDWORD2
+C	PRINT 2650,'SET OLDWORDS for again'
+	GOTO 2608
+C
+C	You can't do something again if you haven't done anything yet.
+C
+2647	CALL RSPEAK(14)
+	GOTO 2012
+C
+2650	FORMAT('DEBUG: ',A)
 C
 C  Get second word for analysis.
 C
@@ -401,6 +423,13 @@ C
 	IF(PCT(20))SPK=13
 	CALL RSPEAK(SPK)
 	GOTO 2600
+C	Maximum verbosity.
+3100	IF(VERBOSITY.EQV..TRUE.)GOTO 3101
+	CALL RSPEAK(202)
+	VERBOSITY=.TRUE.
+	GOTO 2012
+3101	CALL RSPEAK(203)
+	GOTO 2012
 C
 C  Analyse a verb.  Remember what it was, go back for object if second word
 C  unless verb is "SAY", which snarfs arbitrary second word.
@@ -1240,6 +1269,7 @@ C
 8260	SPK=156
 	ABBNUM=10000
 	DETAIL=3
+	VERBOSITY=.FALSE.
 	GOTO 2011
 C
 C  READ.  Magazines in dwarvish, message we've seen, and . . . oyster?
@@ -1294,7 +1324,6 @@ C  RESUME.  Restore the world.
 C
 8320	CALL RSTRGM(I)
 	GO TO 2012
-
 C  Cave closing and scoring
 C
 C  These sections handle the closing of the cave.  The cave closes "CLOCK1"
